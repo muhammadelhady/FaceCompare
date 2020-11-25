@@ -18,7 +18,8 @@ def compare_images():
     im1.save(os.path.join('UPLOADEDIMAGES', (genimagename1+file_extension1)))
     image1 = fc.load_image_file(os.path.join('UPLOADEDIMAGES', (genimagename1+file_extension1)))
     image1 = cv2.cvtColor(image1, cv2.COLOR_BGR2RGB)
-    image1encode = fc.face_encodings(image1)[0]
+    image1Faces = fc.face_encodings(image1, num_jitters=28)
+
 
     im2 = request.files['image2']
     filename2, file_extension2 = os.path.splitext(im2.filename)
@@ -26,18 +27,39 @@ def compare_images():
     im2.save(os.path.join('UPLOADEDIMAGES', (genimagename2+file_extension2)))
     image2 = fc.load_image_file(os.path.join('UPLOADEDIMAGES', (genimagename2+file_extension2)))
     image2 = cv2.cvtColor(image2, cv2.COLOR_BGR2RGB)
-    image2encode = fc.face_encodings(image2)[0]
+    image2Faces = fc.face_encodings(image2, num_jitters=60)
+
+    if image1Faces.__len__() == 0 or image2Faces.__len__() == 0:
+        return jsonify("there is No Faces Detected in the image ... try again!!!")
+
+    if image1Faces.__len__() > 1 or image2Faces.__len__() > 1:
+        return jsonify("there is too many Faces Detected in the image ... try again!!!")
+
+
+    image1encode = image1Faces[0]
+    os.remove(os.path.join('UPLOADEDIMAGES', (genimagename1 + file_extension1)))
+
+    image2encode = image2Faces[0]
+    os.remove(os.path.join('UPLOADEDIMAGES', (genimagename2+file_extension2)))
 
 
 
-    # image2 = fc.load_image_file("images/2.jpg")
+    result = fc.compare_faces([image1encode], image2encode, 0.5)
 
-    result = fc.compare_faces([image1encode], image2encode)
-    r = fc.face_distance([image1encode], image2encode)
+    distance = fc.face_distance([image1encode], image2encode)
+    sure_percentage = (1-distance)*100
+
     print(result[0])
-    print(r)
+    print(distance)
+    print(sure_percentage)
 
-    return jsonify(bool(result[0]))
+
+    return jsonify({
+       "match": bool(result[0]),
+       "sure": int(sure_percentage)
+    }
+
+    )
 
 
 if __name__ == "__main__":
