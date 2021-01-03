@@ -12,22 +12,35 @@ app = Flask(__name__)
 
 @app.route("/api/compare_images", methods=['POST'])
 def compare_images():
-    im1 = request.files['image1']
-    filename1, file_extension1 = os.path.splitext(im1.filename)
-    genimagename1 = str(uuid.uuid4())
-    im1.save(os.path.join('UPLOADEDIMAGES', (genimagename1+file_extension1)))
-    image1 = fc.load_image_file(os.path.join('UPLOADEDIMAGES', (genimagename1+file_extension1)))
+    json = request.get_json(force=True)
+    # print(testt.__len__())
+    #
+    # test1 = 'test'
+    # test12= 'test'
+    #
+    # test122 = 'test'
+    #
+    # test = request.args['image1']
+    # im1 = request.files['image1']
+    # filename1, file_extension1 = os.path.splitext(im1.filename)
+    # genimagename1 = str(uuid.uuid4())
+    # im1.save(os.path.join('UPLOADEDIMAGES', (genimagename1+file_extension1)))
+    #image1 = fc.load_image_file(os.path.join('UPLOADEDIMAGES', (genimagename1+file_extension1)))
+
+    image1 = fc.load_image_file(json['Image1'])
+
     image1 = cv2.cvtColor(image1, cv2.COLOR_BGR2RGB)
-    image1Faces = fc.face_encodings(image1, num_jitters=28)
+    image1Faces = fc.face_encodings(image1, num_jitters=0)
 
-
-    im2 = request.files['image2']
-    filename2, file_extension2 = os.path.splitext(im2.filename)
-    genimagename2 = str(uuid.uuid4())
-    im2.save(os.path.join('UPLOADEDIMAGES', (genimagename2+file_extension2)))
-    image2 = fc.load_image_file(os.path.join('UPLOADEDIMAGES', (genimagename2+file_extension2)))
+    #
+    # im2 = request.files['image2']
+    # filename2, file_extension2 = os.path.splitext(im2.filename)
+    # genimagename2 = str(uuid.uuid4())
+    # im2.save(os.path.join('UPLOADEDIMAGES', (genimagename2+file_extension2)))
+    # image2 = fc.load_image_file(os.path.join('UPLOADEDIMAGES', (genimagename2+file_extension2)))
+    image2 = fc.load_image_file(json['Image2'])
     image2 = cv2.cvtColor(image2, cv2.COLOR_BGR2RGB)
-    image2Faces = fc.face_encodings(image2, num_jitters=60)
+    image2Faces = fc.face_encodings(image2, num_jitters=0)
 
     if image1Faces.__len__() == 0 or image2Faces.__len__() == 0:
         return jsonify("there is No Faces Detected in the image ... try again!!!")
@@ -37,10 +50,10 @@ def compare_images():
 
 
     image1encode = image1Faces[0]
-    os.remove(os.path.join('UPLOADEDIMAGES', (genimagename1 + file_extension1)))
+   # os.remove(os.path.join('UPLOADEDIMAGES', (genimagename1 + file_extension1)))
 
     image2encode = image2Faces[0]
-    os.remove(os.path.join('UPLOADEDIMAGES', (genimagename2+file_extension2)))
+   # os.remove(os.path.join('UPLOADEDIMAGES', (genimagename2+file_extension2)))
 
 
 
@@ -53,13 +66,11 @@ def compare_images():
     print(distance)
     print(sure_percentage)
 
+    if bool(result[0]):
+        return jsonify({"match": "Matched"})
+    return jsonify({"match": "Not Matched"})
 
-    return jsonify({
-       "match": bool(result[0]),
-       "sure": int(sure_percentage)
-    }
 
-    )
 
 
 if __name__ == "__main__":
