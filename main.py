@@ -43,10 +43,10 @@ def compare_images():
     image2Faces = fc.face_encodings(image2, num_jitters=0)
 
     if image1Faces.__len__() == 0 or image2Faces.__len__() == 0:
-        return jsonify("there is No Faces Detected in the image ... try again!!!")
+        return jsonify({"Message": "there is No Faces Detected in the image ... try again!!!"})
 
     if image1Faces.__len__() > 1 or image2Faces.__len__() > 1:
-        return jsonify("there is too many Faces Detected in the image ... try again!!!")
+        return jsonify({"Message": "there is too many Faces Detected in the image ... try again!!!"})
 
 
     image1encode = image1Faces[0]
@@ -57,7 +57,7 @@ def compare_images():
 
 
 
-    result = fc.compare_faces([image1encode], image2encode, 0.5)
+    result = fc.compare_faces([image1encode],image2encode,0.7)
 
     distance = fc.face_distance([image1encode], image2encode)
     sure_percentage = (1-distance)*100
@@ -67,11 +67,11 @@ def compare_images():
     print(sure_percentage)
 
     if bool(result[0]):
-        return jsonify({"match": "Matched"})
-    return jsonify({"match": "Not Matched"})
+        return jsonify({"Message": "Matched"})
+    return jsonify({"Message": "Not Matched"})
 
 
 
 
 if __name__ == "__main__":
-    app.run(port=8011)
+    app.run(port=3123)
