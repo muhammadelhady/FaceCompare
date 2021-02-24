@@ -74,4 +74,6 @@ def compare_images():
 
 
 if __name__ == "__main__":
-    app.run(port=3123)
+    app.debug = True
+    app.run(port=8011)
+
